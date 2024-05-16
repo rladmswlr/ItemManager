@@ -12,7 +12,6 @@ const createdPlayerSchema = joi.object({
 
 router.post('/characters', async (req, res, next) => {
     // 1. 클라이언트로 부터 받아온 name 데이터를 가져온다.
-try{
     const validation = await createdPlayerSchema.validateAsync(req.body);
 
     const {Playername} = validation
@@ -40,9 +39,7 @@ try{
 
     // 5. 캐릭터 json에 반환
     return res.status(201).json({ Playername: Playername, character_id: character_id });
-}catch(error){
-    next(error);
-}
+
 })
 
 //아이템 추가
