@@ -7,175 +7,148 @@ import { validate } from 'uuid';
 const router = express.Router();
 
 const createdPlayerSchema = joi.object({
-  Playername: joi.string().min(1).max(50).required(),
-});
+    Playername: joi.string().min(1).max(50).required(),
+})
 
 router.post('/characters', async (req, res, next) => {
-  // 1. Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ş¾Æ¿ï¿½ name ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Â´ï¿½.
-  try {
+    // 1. Å¬¶óÀÌ¾ğÆ®·Î ºÎÅÍ ¹Ş¾Æ¿Â name µ¥ÀÌÅÍ¸¦ °¡Á®¿Â´Ù.
+try{
     const validation = await createdPlayerSchema.validateAsync(req.body);
 
-    const { Playername } = validation;
+    const {Playername} = validation
 
-    // 1-5. ï¿½ï¿½ï¿½ï¿½, value ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾ï¿½ï¿½ï¿½ ï¿½ï¿½, Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ş½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
+    // 1-5. ¸¸¾à, value µ¥ÀÌÅÍ¸¦ Àü´ŞÇÏÁö ¾Ê¾ÒÀ» ¶§, Å¬¶óÀÌ¾ğÆ®¿¡°Ô ¿¡·¯ ¸Ş½ÃÁö¸¦ Àü´ŞÇÑ´Ù.
     if (!Playername) {
-      return res.status(400).json({ errorMessage: 'ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ã¹Ù¸ï¿½ï¿½ï¿½ ï¿½Ê½ï¿½ï¿½Ï´ï¿½.' });
+        return res.status(400).json({ errorMessage: "ÀÌ¸§ °ªÀÌ ¿Ã¹Ù¸£Áö ¾Ê½À´Ï´Ù." });
     }
 
-    // 2. ï¿½Ø´ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ID ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½È¸ï¿½Ñ´ï¿½.
-    // findOneï¿½ï¿½ ï¿½Ñ°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½È¸ï¿½Ñ´ï¿½.
-    // sort ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½ -> ï¿½î¶² ï¿½Ã·ï¿½ï¿½ï¿½? -> orderï¿½ï¿½ ï¿½Õ¿ï¿½ - ï¿½Ù¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½
-    // mongooseï¿½ï¿½ï¿½ï¿½ await ï¿½Û¼ï¿½ï¿½Ï¸ï¿½ ï¿½×»ï¿½ exec() ï¿½ï¿½ï¿½
-    const PlayerMaxOrder = await Player.findOne(
-      {},
-      { _id: 0, __v: 0, health: 0, power: 0 }
-    )
-      .sort('-character_id')
-      .exec();
+    // 2. ÇØ´çÇÏ´Â ¸¶Áö¸· Ä³¸¯ÅÍID µ¥ÀÌÅÍ¸¦ Á¶È¸ÇÑ´Ù.
+    // findOneÀº ÇÑ°³ÀÇ µ¥ÀÌÅÍ¸¸ Á¶È¸ÇÑ´Ù.
+    // sort ´Â Á¤·ÄÇÑ´Ù -> ¾î¶² ÄÃ·³À»? -> orderÀ» ¾Õ¿¡ - ºÙ¿©¼­ ³»¸²Â÷¼øÀ¸·Î Á¤·ÄÇÑ´Ù
+    // mongoose¿¡¼­ await ÀÛ¼ºÇÏ¸é Ç×»ó exec() »ç¿ë
+    const PlayerMaxOrder = await Player.findOne({},{_id:0,__v:0, health:0, power:0}).sort('-character_id').exec();
 
-    // 3. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ø¾ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ +1ï¿½Ï°ï¿½, order ï¿½ï¿½ï¿½ï¿½ï¿½Í°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê´Ù¸ï¿½, 1ï¿½ï¿½ ï¿½Ò´ï¿½
+    // 3. ¸¸¾à Á¸ÀçÇÑ´Ù¸é ÇöÀç ÇØ¾ß ÇÒ ÀÏÀ» +1ÇÏ°í, order µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Ù¸é, 1·Î ÇÒ´ç
     const character_id = PlayerMaxOrder ? PlayerMaxOrder.character_id + 1 : 1;
 
     const health = 500;
     const power = 100;
 
-    // 4. Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+    // 4. Ä³¸¯ÅÍ Á¤º¸ µî·Ï
     const player = new Player({ Playername, character_id, health, power });
     await player.save();
 
-    // 5. Ä³ï¿½ï¿½ï¿½ï¿½ jsonï¿½ï¿½ ï¿½ï¿½È¯
-    return res
-      .status(201)
-      .json({ Playername: Playername, character_id: character_id });
-  } catch (error) {
+    // 5. Ä³¸¯ÅÍ json¿¡ ¹İÈ¯
+    return res.status(201).json({ Playername: Playername, character_id: character_id });
+}catch(error){
     next(error);
-  }
-});
+}
+})
 
-//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
+//¾ÆÀÌÅÛ Ãß°¡
 router.post('/items', async (req, res, next) => {
-  // 1. Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ş¾Æ¿ï¿½ ï¿½Ì¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Â´ï¿½.
-  const { item_name, item_stat } = req.body;
-  // 1-5. ï¿½ï¿½ï¿½ï¿½,  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½ï¿½Ì³ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½
-  if (!item_name || !item_stat) {
-    return res.status(400).json({ errorMessage: 'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ã¹Ù¸ï¿½ï¿½ï¿½ ï¿½Ê½ï¿½ï¿½Ï´ï¿½.' });
-  }
+    // 1. Å¬¶óÀÌ¾ğÆ®·Î ºÎÅÍ ¹Ş¾Æ¿Â ÀÌ¸§µ¥ÀÌÅÍ¿Í ½ºÅÈ µ¥ÀÌÅÍ¸¦ °¡Á®¿Â´Ù.
+    const { item_name, item_stat } = req.body;
+    // 1-5. ¸¸¾à,  ¾ÆÀÌÅÛ ÀÌ¸§ÀÌ³ª, ½ºÅÈ ³»¿ëÀÌ ¾øÀ»½Ã ¿¡·¯ ¹ß»ı
+    if (!item_name || !item_stat) {
+        return res.status(400).json({ errorMessage: "¾ÆÀÌÅÛ °ªÀÌ ¿Ã¹Ù¸£Áö ¾Ê½À´Ï´Ù." });
+    }
 
-  // 2. ï¿½Ø´ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½È¸ï¿½Ñ´ï¿½.
-  // findOneï¿½ï¿½ ï¿½Ñ°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½È¸ï¿½Ñ´ï¿½.
-  // sort ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½ -> ï¿½î¶² ï¿½Ã·ï¿½ï¿½ï¿½? -> orderï¿½ï¿½ ï¿½Õ¿ï¿½ - ï¿½Ù¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½
-  // mongooseï¿½ï¿½ï¿½ï¿½ await ï¿½Û¼ï¿½ï¿½Ï¸ï¿½ ï¿½×»ï¿½ exec() ï¿½ï¿½ï¿½
-  const ItemMaxOrder = await Item.findOne().sort('-item_code').exec();
+    // 2. ÇØ´çÇÏ´Â ¸¶Áö¸· ¾ÆÀÌÅÛ µ¥ÀÌÅÍ¸¦ Á¶È¸ÇÑ´Ù.
+    // findOneÀº ÇÑ°³ÀÇ µ¥ÀÌÅÍ¸¸ Á¶È¸ÇÑ´Ù.
+    // sort ´Â Á¤·ÄÇÑ´Ù -> ¾î¶² ÄÃ·³À»? -> orderÀ» ¾Õ¿¡ - ºÙ¿©¼­ ³»¸²Â÷¼øÀ¸·Î Á¤·ÄÇÑ´Ù
+    // mongoose¿¡¼­ await ÀÛ¼ºÇÏ¸é Ç×»ó exec() »ç¿ë
+    const ItemMaxOrder = await Item.findOne().sort('-item_code').exec();
 
-  // 3. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ø¾ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ +1ï¿½Ï°ï¿½, order ï¿½ï¿½ï¿½ï¿½ï¿½Í°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê´Ù¸ï¿½, 1ï¿½ï¿½ ï¿½Ò´ï¿½
-  const item_code = ItemMaxOrder ? ItemMaxOrder.item_code + 1 : 1;
+    // 3. ¸¸¾à Á¸ÀçÇÑ´Ù¸é ÇöÀç ÇØ¾ß ÇÒ ÀÏÀ» +1ÇÏ°í, order µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏÁö ¾Ê´Ù¸é, 1·Î ÇÒ´ç
+    const item_code = ItemMaxOrder ? ItemMaxOrder.item_code + 1 : 1;
 
-  // 4. ï¿½Ø¾ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½
-  const item = new Item({
-    item_name: item_name,
-    item_code: item_code,
-    item_stat: item_stat,
-  });
-  await item.save();
+    // 4. ÇØ¾ßÇÒ ÀÏ µî·Ï
+    const item = new Item({ item_name: item_name, item_code: item_code, item_stat: item_stat });
+    await item.save();
 
-  // 5. ï¿½Ø¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ï¿½Ñ´ï¿½.
-  return res
-    .status(201)
-    .json({ item_name: item_name, item_code: item_code, item_stat: item_stat });
-});
+    // 5. ÇØ¾ßÇÒ ÀÏÀ» Å¬¶óÀÌ¾ğÆ®¿¡°Ô ¹İÈ¯ÇÑ´Ù.
+    return res.status(201).json({ item_name: item_name, item_code: item_code, item_stat: item_stat });
+})
 
 router.get('/characters/:character_id', async (req, res, next) => {
-  const { character_id } = req.params;
-  // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ orderï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ë¾Æ¾ï¿½ï¿½Ñ´ï¿½.
-  const nowPlayer = await Player.findOne({ character_id }).exec();
-  if (!nowPlayer) {
-    return res.status(404).json({ errorMessage: 'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê´ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½Ô´Ï´ï¿½' });
-  }
+    const { character_id } = req.params;
+    // ÇöÀç ³ªÀÇ order°¡ ¹«¾ùÀÎÁö ¾Ë¾Æ¾ßÇÑ´Ù.
+    const nowPlayer = await Player.findOne({ character_id }).exec();
+    if (!nowPlayer) {
+        return res.status(404).json({ errorMessage: 'Á¸ÀçÇÏÁö ¾Ê´Â ÇÃ·¹ÀÌ¾î ÀÔ´Ï´Ù' });
+    }
 
-  const PlayerNameData = nowPlayer.Playername;
-  const PlayerHealthData = nowPlayer.health;
-  const PlayerPowerData = nowPlayer.power;
-  // 2. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¸ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ñ±ï¿½ï¿½.
-  return res.status(200).json({
-    Playername: PlayerNameData,
-    health: PlayerHealthData,
-    power: PlayerPowerData,
-  });
-});
+    const PlayerNameData = nowPlayer.Playername;
+    const PlayerHealthData = nowPlayer.health;
+    const PlayerPowerData = nowPlayer.power;
+    // 2. ¼¼ºÎÁ¤º¸ Á¶È¸ °á°ú¸¦ ³Ñ±ä´Ù.
+    return res.status(200).json({ Playername: PlayerNameData, health: PlayerHealthData, power: PlayerPowerData });
+})
 
-/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½È¸ API */
+/* ¾ÆÀÌÅÛ ¸ñ·Ï Á¶È¸ API */
 router.get('/items', async (req, res, next) => {
-  // 1. ï¿½Ø¾ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½È¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
-  const items = await Item.find({}, { item_stat: 0, _id: 0, __v: 0 })
-    .sort('-item_code')
-    .exec();
+    // 1. ÇØ¾ßÇÒ ÀÏ ¸ñ·Ï Á¶È¸¸¦ ÁøÇàÇÑ´Ù.
+    const items = await Item.find({}, { item_stat: 0, _id: 0, __v: 0 }).sort('-item_code').exec();
 
-  // 2. ï¿½Ø¾ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½È¸ ï¿½ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ï¿½Ñ´ï¿½.
-  return res.status(200).json({ items });
-});
 
-/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¸ API */
+    // 2. ÇØ¾ßÇÒ ÀÏ ¸ñ·Ï Á¶È¸ °á°ú¸¦ Å¬¶óÀÌ¾ğÆ®¿¡°Ô ¹İÈ¯ÇÑ´Ù.
+    return res.status(200).json({ items });
+})
+
+/* ¾ÆÀÌÅÛ »ó¼¼ Á¤º¸ Á¶È¸ API */
 router.get('/items/:item_code', async (req, res, next) => {
-  const { item_code } = req.params;
+    const { item_code } = req.params;
+    
+    // ÇöÀç ³ªÀÇ order°¡ ¹«¾ùÀÎÁö ¾Ë¾Æ¾ßÇÑ´Ù.
+    const nowItem = await Item.findOne({ item_code }, { _id: 0, __v: 0, _id: 0 }).exec();
+    if (!nowItem) {
+        return res.status(404).json({ errorMessage: 'Á¸ÀçÇÏÁö ¾Ê´Â ÇÃ·¹ÀÌ¾î ÀÔ´Ï´Ù' });
+    }
 
-  // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ orderï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ë¾Æ¾ï¿½ï¿½Ñ´ï¿½.
-  const nowItem = await Item.findOne(
-    { item_code },
-    { _id: 0, __v: 0, _id: 0 }
-  ).exec();
-  if (!nowItem) {
-    return res.status(404).json({ errorMessage: 'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê´ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½Ô´Ï´ï¿½' });
-  }
 
-  // 2. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¸ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ñ±ï¿½ï¿½.
-  return res.status(200).json({ nowItem });
-});
+    // 2. ¼¼ºÎÁ¤º¸ Á¶È¸ °á°ú¸¦ ³Ñ±ä´Ù.
+    return res.status(200).json({ nowItem });
+})
 
-//Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ API
+//Ä³¸¯ÅÍ »èÁ¦ API
 router.delete('/characters/:character_id', async (req, res, next) => {
-  const { character_id } = req.params;
+    const { character_id } = req.params;
 
-  const nowPlayer = await Player.findOne({ character_id }).exec();
-  if (!nowPlayer) {
-    return res.status(404).json({ errorMessage: 'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê´ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½Ô´Ï´ï¿½' });
-  }
+    const nowPlayer = await Player.findOne({ character_id }).exec();
+    if (!nowPlayer) {
+        return res.status(404).json({ errorMessage: 'Á¸ÀçÇÏÁö ¾Ê´Â ÇÃ·¹ÀÌ¾î ÀÔ´Ï´Ù' });
+    }
 
-  await Player.deleteOne({ character_id });
+    await Player.deleteOne({ character_id });
 
-  return res
-    .status(200)
-    .json('Ä³ï¿½ï¿½ï¿½ï¿½ ' + nowPlayer.Playername + 'ï¿½ï¿½/ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¼Ì½ï¿½ï¿½Ï´ï¿½');
-});
+    return res.status(200).json("Ä³¸¯ÅÍ " + nowPlayer.Playername +"À»/¸¦ »èÁ¦ÇÏ¼Ì½À´Ï´Ù");
+})
 
-/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ API */
+/* ¾ÆÀÌÅÛ Á¤º¸°ª º¯°æ API */
 router.patch('/items/:item_code', async (req, res, next) => {
-  //item_code => paramsï¿½ï¿½
-  const { item_code } = req.params;
-  //ï¿½Ô·Â°ï¿½
-  const { item_name, item_stat } = req.body;
-  // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½
-  const nowItem = await Item.findOne(
-    { item_code },
-    { item_code: 0, __v: 0 }
-  ).exec();
-  if (!nowItem) {
-    return res
-      .status(404)
-      .json({ errorMessage: 'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ô´Ï´ï¿½.' });
-  }
+    //item_code => params°ª
+    const { item_code } = req.params;
+    //ÀÔ·Â°ª
+    const { item_name, item_stat } = req.body;
+    // ÇöÀç ³ªÀÇ ¾ÆÀÌÅÛÀÌ ¹«¾ùÀÎÁö È®ÀÎ
+    const nowItem = await Item.findOne({item_code},{item_code:0, __v:0}).exec();
+    if (!nowItem) {
+        return res.status(404).json({ errorMessage: 'Á¸ÀçÇÏÁö ¾Ê´Â ¾ÆÀÌÅÛ °ª ÀÔ´Ï´Ù.' });
+    }
 
-  if (item_name) {
-    nowItem.item_name = item_name;
-  }
+    if (item_name) {
+        nowItem.item_name = item_name;
+    }
 
-  if (item_stat) {
-    nowItem.item_stat = item_stat;
-  }
+    if(item_stat) {
+        nowItem.item_stat = item_stat; 
+    }
 
-  await nowItem.save();
+    await nowItem.save();
 
-  return res.status(200).json({ nowItem });
+    return res.status(200).json({nowItem});
 });
 
-//ï¿½ÜºÎ·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//¿ÜºÎ·Î ¶ó¿ìÅÍ º¸³»±â
 export default router;
