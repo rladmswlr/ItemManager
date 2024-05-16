@@ -2,7 +2,6 @@ import express from 'express';
 import joi from 'joi';
 import Player from '../schemas/characters.schema.js';
 import Item from '../schemas/item.schema.js';
-import { validate } from 'uuid';
 
 const router = express.Router();
 
