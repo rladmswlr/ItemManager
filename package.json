@@ -1,0 +1,11 @@
+{
+  "name": "item-simulator",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "express": "^4.19.2",
+    "mongoose": "^8.3.5"
+  }
+}
